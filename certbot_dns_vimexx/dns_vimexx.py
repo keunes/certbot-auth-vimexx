@@ -4,6 +4,7 @@ from typing import Any, Optional, Protocol
 from certbot import errors
 from certbot.plugins import dns_common
 from .vimexx_client import VimexxClient
+from certbot import errors
 
 logger = logging.getLogger(__name__)
 
