@@ -2,6 +2,7 @@ import requests
 import logging
 from typing import Dict, Optional
 from urllib.parse import quote, quote_plus
+import tldextract
 
 logger = logging.getLogger(__name__)
 
@@ -31,6 +32,16 @@ class VimexxClient:
         self.access_token = None
         self.TTL = "86400"  # TTL for DNS records, because Vimexx API doesn't tell us the current values
                             #TODO: Make this configurable
+
+    def _extract_domain_parts(self, domain: str) -> tuple[str, str]:
+        """Extract SLD and TLD using Public Suffix List.
+        """
+        extracted = tldextract.extract(domain.lstrip('*.'))
+        
+        if not extracted.domain or not extracted.suffix:
+            raise ValueError(f"Cannot parse domain: {domain}")
+        
+        return extracted.domain, extracted.suffix
 
     def authenticate(self) -> Dict[str, str]:
         """Authenticate with the Vimexx API using OAuth2."""
@@ -127,7 +138,7 @@ class VimexxClient:
             f"- Name: {record_name}\n"
             f"- Content: {record_content}")
         
-        sld, tld = domain.split('.')[-2:]
+        sld, tld = self._extract_domain_parts(domain)
         
         # Get current records
         logger.debug("Fetching current DNS records...")
@@ -165,7 +176,7 @@ class VimexxClient:
     def delete_txt_record(self, domain: str, record_name: str, record_content: str) -> None:
         """Delete a TXT record from domain."""
         
-        sld, tld = domain.split('.')[-2:]
+        sld, tld = self._extract_domain_parts(domain)
         
         # Get current records
         logging.debug("Fetching current DNS records...")
