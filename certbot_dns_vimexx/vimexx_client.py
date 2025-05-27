@@ -172,7 +172,7 @@ class VimexxClient:
             "name": record_name,
             "type": "TXT",
             "content": record_content,
-            "ttl": "60"
+            "ttl": self.CHALLENGE_TTL
         }
         updated_records.append(new_record)
         logger.debug("New TXT record added")
