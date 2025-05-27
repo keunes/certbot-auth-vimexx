@@ -1,0 +1,6 @@
+include README.md
+include LICENSE
+recursive-include certbot_dns_vimexx *.py
+recursive-include tests *.py
+exclude *.pyc
+exclude __pycache__/*
