@@ -20,15 +20,13 @@ certbot --authenticator dns-vimexx --dns-vimexx-credentials /path/to/vimexx.ini 
 
 This command will create a DNS TXT with the [ACME](https://datatracker.ietf.org/doc/html/rfc8555) challenge provided by Let's Encrypt, attempt to obtain a certificate for .
 
-## Usage
-
 The plugin requires a configuration file (e.g., `vimexx.ini`) containing your general user credentials and [API client details](https://my.vimexx.nl/api) from Vimexx. Create this file with the following structure:
 
 ```ini
-client-id = your_client_id
-client-secret = your_client_secret
-username = your_username
-password = your_password
+dns_vimexx_client_id = your_client_id
+dns_vimexx_client_secret = your_client_secret
+dns_vimexx_username = your_username
+dns_vimexx_password = your_password
 ```
 
 When running Certbot, specify the path to this configuration file using the `--dns-vimexx-credentials` argument.
@@ -37,7 +35,7 @@ For security reasons, make sure that
 - the file is owned by the root user or the user running certbot: `chown root:root vimexx.ini`
 - only the file owner can read and write the file: `chmod 600 vimexx.ini`
 
-You can also add the argument `--dns-mijn-host-propagation-seconds 60` to increase the waiting time for DNS propagation after the DNS record has been created.
+You can also add the argument `--dns-vimexx-propagation-seconds 60` to increase the waiting time for DNS propagation after the DNS record has been created.
 
 After the challenge is completed (or has failed), the created DNS record is removed as well.
 
