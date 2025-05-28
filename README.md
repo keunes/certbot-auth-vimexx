@@ -23,10 +23,10 @@ This command will create a DNS TXT with the [ACME](https://datatracker.ietf.org/
 The plugin requires a configuration file (e.g., `vimexx.ini`) containing your general user credentials and [API client details](https://my.vimexx.nl/api) from Vimexx. Create this file with the following structure:
 
 ```ini
-dns_vimexx_client_id = your_client_id
-dns_vimexx_client_secret = your_client_secret
-dns_vimexx_username = your_username
-dns_vimexx_password = your_password
+client_id = your_client_id
+client_secret = your_client_secret
+username = your_username
+password = your_password
 ```
 
 When running Certbot, specify the path to this configuration file using the `--dns-vimexx-credentials` argument.

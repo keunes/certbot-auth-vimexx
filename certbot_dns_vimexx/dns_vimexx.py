@@ -51,10 +51,10 @@ class DNSVimexxAuthenticator(dns_common.DNSAuthenticator):
         # Create our own credentials object as certbot's credential interface doesn't handle passwords with special characters well
         class VimexxCredentials:
             def __init__(self, config):
-                self.client_id = config['default']['dns_vimexx_client_id']
-                self.client_secret = config['default']['dns_vimexx_client_secret']
-                self.username = config['default']['dns_vimexx_username']
-                self.password = config['default']['dns_vimexx_password']
+                self.client_id = config['default']['client_id']
+                self.client_secret = config['default']['client_secret']
+                self.username = config['default']['username']
+                self.password = config['default']['password']
             
             def conf(self, name):
                 """Maintain compatibility with Certbot's credential interface"""
