@@ -45,55 +45,57 @@ class VimexxClient:
         return extracted.domain, extracted.suffix
 
     def authenticate(self) -> Dict[str, str]:
-        """Authenticate with the Vimexx API using OAuth2."""
-
-        logger.debug("Initiating authentication process")
-        auth_url = f"{self.BASE_URL}/auth/token"
-        headers_script = {
-            'Content-Type': 'application/x-www-form-urlencoded'
-        }
-
-        payload_script = '&'.join([
-            'grant_type=password',
-            f'client_id={quote(self.client_id)}',
-            f'client_secret={quote(self.client_secret)}',
-            f'username={quote(self.username)}',
-            f'password={quote_plus(self.password)}',
-            'scope=whmcs-access'
-        ])
-
-        import requests
-
-        response = requests.request("POST", auth_url, headers=headers_script, data=payload_script)
-
-        if response.status_code != 200:
-            logger.error(f"Authentication failed with status code {response.status_code}")
-            logger.debug(f"Response body: {response.text}")
-            response.raise_for_status()
-        
-        logger.debug(f"Authentication successful with code {response.status_code}")
+        """Authenticate with the Vimexx API and get an access token."""
         try:
-            token_data = response.json()
-            logger.debug("Successfully parsed JSON response")
+            logger.debug("Initiating authentication process")
+            auth_url = f"{self.BASE_URL}/auth/token"
+            headers_script = {
+                'Content-Type': 'application/x-www-form-urlencoded'
+            }
+
+            payload_script = '&'.join([
+                'grant_type=password',
+                f'client_id={quote(self.client_id)}',
+                f'client_secret={quote(self.client_secret)}',
+                f'username={quote(self.username)}',
+                f'password={quote_plus(self.password)}',
+                'scope=whmcs-access'
+            ])
+
+            response = requests.post(auth_url, headers=headers_script, data=payload_script)
+
+            if response.status_code == 401:
+                logger.debug("Authentication failed: invalid credentials")
+                raise errors.PluginError(
+                    "Failed to authenticate with Vimexx API. Please check your credentials."
+                )
+                
+            response.raise_for_status()
             
-            if "access_token" not in token_data:
-                logger.debug(f"No access token in response: {token_data}")
-                raise errors.PluginError("No access token in response")
-            
-            self.access_token = token_data["access_token"]
-            logger.debug("Successfully obtained access token")
-            return token_data
-            
-        except ValueError as e:
-            logger.error(f"Failed to parse response: {str(e)}")
-            logger.debug(f"Raw response: {response.text}")
-            raise errors.PluginError(f"Failed to parse authentication response: {str(e)}")
+            try:
+                token_data = response.json()
+                if "access_token" not in token_data:
+                    raise errors.PluginError("Invalid response: no access token received")
+                
+                self.access_token = token_data["access_token"]
+                logger.debug("Successfully authenticated with Vimexx API and obtained access token")
+                return token_data
+                
+            except ValueError as e:
+                logger.debug(f"Failed to parse response: {response.text}")
+                raise errors.PluginError(f"Invalid response from Vimexx API: {str(e)}")
+                
+        except requests.exceptions.RequestException as e:
+            logger.debug(f"Request failed: {str(e)}")
+            raise errors.PluginError(
+                f"Failed to connect to Vimexx API: {str(e)}"
+            )
 
     def api_request(self, endpoint: str, method: str = 'GET', body: Optional[Dict] = None) -> Dict[str, Any]:
         """Make an authenticated API request."""
         logger.debug("Check if access token is set")
         if not self.access_token:
-            logger.info("Access token not set, authenticating...")
+            logger.info("No access token present, attempting authentication")
             self.authenticate()
             logger.debug("Access token set successfully")
 
